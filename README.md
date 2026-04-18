@@ -1,10 +1,6 @@
 # Population Structure of an Indian COVID-19 Cohort  
 ### Joint PCA with 1000 Genomes Reference
 
-<p align="center">
-  <img src="plots/PCA_final.png" width="650">
-</p>
-
 ---
 
 ## Context
@@ -14,6 +10,11 @@ Genomic studies remain disproportionately Eurocentric, limiting discovery in div
 PCA is used here as a **structural validation layer**, not an exploratory endpoint.
 
 ---
+
+<p align="center">
+  <img src="plots/PCA.png" width="650"/>
+</p>
+
 
 ## Result
 
@@ -53,7 +54,7 @@ This anchors the cohort within a global genetic framework and enables direct bio
 
 ## Pipeline (minimal)
 
-QC → Harmonization → SNP intersection → Merge → LD pruning → PCA     
+**QC → Harmonization → SNP intersection → Merge → LD pruning → PCA**    
 
 Design choices prioritize **allelic consistency and genome-wide independence** over maximal variant retention.
 
@@ -71,7 +72,7 @@ This step ensures that downstream association signals are not confounded by popu
 
 ## Study
 
-Kaushik, Mohite et al., 2026  
+**Kaushik, Mohite et al., 2026**  
 *PLOS Neglected Tropical Diseases*  
 https://doi.org/10.1371/journal.pntd.0014020  
 
@@ -86,4 +87,4 @@ Minor variation across environments is expected.
 
 ## Author
 
-Ramakant Mohite
+**Ramakant Mohite**
