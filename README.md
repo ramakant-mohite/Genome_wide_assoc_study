@@ -80,9 +80,9 @@ https://doi.org/10.1371/journal.pntd.0014020
 
 ## Reproducibility
 
-Pipeline scripts are provided for methodological understanding ./scripts  
-Study dataset is freely available at [text](https://doi.org/10.6084/m9.figshare.29650937)
-1000 Genomes phase3 data can be downloaded from [text](https://www.cog-genomics.org/plink/2.0/resources)
+Pipeline scripts are provided for methodological reproducibility **./scripts** 
+Study dataset is freely available at [Figshare](https://doi.org/10.6084/m9.figshare.29650937)
+1000 Genomes phase3 data can be downloaded from [PLINK2/resources](https://www.cog-genomics.org/plink/2.0/resources)
 
 ---
 
