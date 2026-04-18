@@ -1,100 +1,94 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-THREADS=8
-MEMORY=80000
+# Author: Ramakant Mohite
+# Purpose: Prepare study dataset for merge with 1000G and PCA
+# Tool: PLINK 1.9
+
 INPUT=GSA_COVID_1KGenomes_qc_imputed
 
-echo "========================================"
-echo "STEP 2: Study QC (FINAL CLEAN VERSION)"
-echo "========================================"
+echo "[INFO] Checking input files"
+ls ${INPUT}.bed ${INPUT}.bim ${INPUT}.fam
 
-# ------------------------------------------------------------
-# Step 1: SNP filtering
-# ------------------------------------------------------------
-plink --bfile $INPUT \
+# ============================================================
+echo "[STEP 1] Retain biallelic SNPs (A/C/G/T only)"
+# ============================================================
+
+plink \
+  --bfile ${INPUT} \
   --snps-only just-acgt \
   --biallelic-only strict \
   --allow-extra-chr \
-  --threads $THREADS \
-  --memory $MEMORY \
   --make-bed \
-  --out study_step1_snps
+  --out study_step1_snps \
+  --threads 8 \
+  --memory 90000 \
+  2>&1 | tee study_step1_snps.log
 
-# ------------------------------------------------------------
-# Step 2: Remove ambiguous SNPs
-# ------------------------------------------------------------
-awk '{
-  a=toupper($5); b=toupper($6);
-  if ((a=="A" && b=="T") || (a=="T" && b=="A") || \
-      (a=="C" && b=="G") || (a=="G" && b=="C"))
-  print $2
-}' study_step1_snps.bim > ambiguous.snps
+# ============================================================
+echo "[STEP 2] Remove strand-ambiguous SNPs (A/T, C/G)"
+# ============================================================
 
-plink --bfile study_step1_snps \
-  --exclude ambiguous.snps \
-  --allow-extra-chr \
-  --threads $THREADS \
-  --memory $MEMORY \
-  --make-bed \
-  --out study_step2_noAmbig
+awk '($5$6=="AT" || $5$6=="TA" || $5$6=="CG" || $5$6=="GC") && $5!="0" && $6!="0" {print $2}' \
+  study_step1_snps.bim > ambiguous_study.snps
 
-# ------------------------------------------------------------
-# Step 3: Remove duplicate rsIDs (AWK)
-# ------------------------------------------------------------
-awk '!seen[$2]++ {print $2}' study_step2_noAmbig.bim > keep_snps.txt
-
-plink --bfile study_step2_noAmbig \
-  --extract keep_snps.txt \
-  --allow-extra-chr \
-  --threads $THREADS \
-  --memory $MEMORY \
-  --make-bed \
-  --out study_step3_dedup
-
-# ------------------------------------------------------------
-# Step 3b: Remove remaining conflicting rsIDs (CRITICAL FIX)
-# ------------------------------------------------------------
-cut -f2 study_step3_dedup.bim | sort | uniq -d > dup_rsids.txt
-
-plink --bfile study_step3_dedup \
-  --exclude dup_rsids.txt \
+plink \
+  --bfile study_step1_snps \
+  --exclude ambiguous_study.snps \
   --allow-extra-chr \
   --make-bed \
-  --out study_step3_final
+  --out study_step2_clean \
+  --threads 8 \
+  --memory 90000 \
+  2>&1 | tee study_step2_clean.log
 
-# ------------------------------------------------------------
-# Step 4: Sample QC
-# ------------------------------------------------------------
-plink --bfile study_step3_final \
-  --mind 0.02 \
+# ============================================================
+echo "[STEP 3] Remove duplicated SNP IDs (strict)"
+# ============================================================
+
+# Rationale:
+# - Duplicate rsIDs map to multiple loci
+# - PLINK cannot resolve duplicates by ID
+# - Must remove all duplicates for safe merging
+
+cut -f2 study_step2_clean.bim | sort | uniq -d > duplicate_study.snps
+
+plink \
+  --bfile study_step2_clean \
+  --exclude duplicate_study.snps \
   --allow-extra-chr \
-  --threads $THREADS \
-  --memory $MEMORY \
   --make-bed \
-  --out study_step4_sampleQC
+  --out study_step3_clean \
+  --threads 8 \
+  --memory 90000 \
+  2>&1 | tee study_step3_clean.log
 
-# ------------------------------------------------------------
-# Step 5: Autosomes + MAF
-# ------------------------------------------------------------
-plink --bfile study_step4_sampleQC \
+# Verification (must be zero)
+echo "[CHECK] Duplicate SNP IDs remaining:"
+cut -f2 study_step3_clean.bim | sort | uniq -d | wc -l
+
+# ============================================================
+echo "[STEP 4] Restrict to autosomes (chr 1–22)"
+# ============================================================
+
+plink \
+  --bfile study_step3_clean \
   --chr 1-22 \
-  --maf 0.01 \
   --allow-extra-chr \
-  --threads $THREADS \
-  --memory $MEMORY \
   --make-bed \
-  --out study_final_clean
+  --out study_final_clean \
+  --threads 8 \
+  --memory 90000 \
+  2>&1 | tee study_step4_autosomes.log
 
-# ------------------------------------------------------------
-# Validation
-# ------------------------------------------------------------
-echo "[QC] Duplicate rsIDs check:"
-cut -f2 study_final_clean.bim | sort | uniq -d | wc -l
+# ============================================================
+# FINAL CHECK
+# ============================================================
 
-echo "[QC] Chromosome check:"
-cut -f1 study_final_clean.bim | sort | uniq -c
+echo "[CHECK] Chromosomes present:"
+cut -f1 study_final_clean.bim | sort | uniq
 
-echo "========================================"
-echo "FINAL OUTPUT: study_final_clean"
-echo "========================================"
+echo "[CHECK] Non-autosomal chromosomes (expected 0):"
+cut -f1 study_final_clean.bim | grep -E 'X|Y|PAR|MT' | wc -l
+
+echo "[DONE] Study dataset cleaning complete"
