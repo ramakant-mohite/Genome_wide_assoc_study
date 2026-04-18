@@ -1,8 +1,8 @@
-# Ancestry PCA Pipeline (COVID-19 indian GWAS Study)
+# Ancestry Inference via PCA (1000 Genomes + Study Cohort)
 
 This repository provides a reproducible implementation of the ancestry principal component analysis (PCA) workflow of data used in our COVID-19 GWAS.
 
-**Goal is**
+**Goal of this analysis is**
 - Place study samples within a global ancestry framework
 - Identify population outliers
 
@@ -40,6 +40,8 @@ Projection-based PCA is not implemented but can be incorporated if required.
 
 ## PCA Interpretation
 
+**Study samples (indian)** cluster predominantly within the **South Asian (SAS)** super-population.
+
 <h2>PCA Plot</h2>
 
 <p>PCA plot (PC1 vs PC2):</p>
@@ -49,8 +51,6 @@ Projection-based PCA is not implemented but can be incorporated if required.
 
 - PC1 (~50%) separates African vs non-African populations
 - PC2 (~24%) captures Eurasian structure
-
-**Study samples (indian)** cluster predominantly within the **South Asian (SAS)** super-population.
 
 A minor shift toward European clusters is observed, consistent with known admixture patterns in South Asian populations. No discrete outliers are evident.
 
