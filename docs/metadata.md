@@ -1,4 +1,3 @@
-```markdown
 # Generation of 1000 Genomes Population Metadata
 
 ## Overview
@@ -8,9 +7,7 @@ To enable interpretation of principal component analysis (PCA), population label
 The final output file:
 
 ```
-
 1000G_pop.txt
-
 ```
 
 contains:
@@ -23,19 +20,15 @@ contains:
 ## Input data
 
 ```
-
 hg38_corrected.psam
-
 ```
 
 This file contains sample-level annotations. A representative structure is:
 
 ```
-
 #IID    PAT MAT SEX SuperPop Population
 HG00096 0   0   1   EUR      GBR
-
-````
+```
 
 ---
 
@@ -47,12 +40,12 @@ Population labels were extracted directly from the `.psam` file using column-bas
 
 ```bash
 awk 'NR>1 {print $1, $5, $6}' hg38_corrected.psam > 1000G_pop.txt
-````
+```
 
-* `NR>1` skips the header
-* `$1` → IID
-* `$5` → SuperPop
-* `$6` → Population
+- `NR>1` skips the header
+- `$1` → IID
+- `$5` → SuperPop
+- `$6` → Population
 
 ---
 
@@ -135,7 +128,5 @@ df <- merge(pca, meta, by="IID", all.x=TRUE)
 df$Group <- ifelse(is.na(df$SuperPop), "STUDY", df$SuperPop)
 ```
 
-* 1000G samples → labeled by ancestry
-* Study samples → labeled as `STUDY`
-
----
+- 1000G samples → labeled by ancestry
+- Study samples → labeled as `STUDY`
