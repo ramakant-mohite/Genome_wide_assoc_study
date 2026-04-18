@@ -1,25 +1,25 @@
+
 ````md
 # Ancestry PCA Pipeline (COVID-19 GWAS Study)
 
 ## Overview
 
-This repository contains a reproducible implementation of the ancestry PCA workflow used in our COVID-19 genetic study.
+This repository provides a reproducible implementation of the ancestry principal component analysis (PCA) workflow used in our COVID-19 GWAS.
 
-The pipeline has been reconstructed step-by-step to make it easier to understand, reuse, and adapt for similar GWAS projects, while preserving the core analytical logic of the original study.
+The pipeline is reconstructed step-by-step to improve clarity, reusability, and transparency, while preserving the analytical logic of the original study.
 
-The goal is to:
-
-* place study samples in a global ancestry context  
-* detect potential outliers  
-* generate principal components for GWAS correction  
+**Objectives:**
+- Place study samples within a global ancestry framework  
+- Identify population outliers  
+- Generate principal components for GWAS covariate adjustment  
 
 ---
 
-## Study context
+## Study Context
 
-India remains underrepresented in global genomic studies. In this work, we investigated whether population-specific genetic variation contributes to COVID-19 severity and outcomes, and how the choice of reference panel influences GWAS resolution.
+India remains underrepresented in large-scale genomic studies. This work investigates whether population-specific genetic variation contributes to COVID-19 severity and evaluates how reference panel choice influences GWAS resolution.
 
-This repository reflects the ancestry analysis component of:
+This repository corresponds to the ancestry analysis component of:
 
 **Kaushik, Mohite et al., 2026**  
 *PLOS Neglected Tropical Diseases*  
@@ -27,56 +27,55 @@ https://doi.org/10.1371/journal.pntd.0014020
 
 ---
 
-## Important note
+## Reproducibility Note
 
-This is a **reproducible implementation** of the ancestry PCA workflow used in the study, with minor simplifications for clarity.
+This implementation is designed for **methodological reproducibility**, not exact byte-level replication.
 
-* The core analytical steps and logic are preserved  
-* Some implementation details have been streamlined for usability  
-* The aim is transparency and reproducibility, not exact byte-level replication  
+- Core analytical steps and rationale are preserved  
+- Certain implementation details are simplified for usability  
+- Outputs may differ slightly due to software versions and parameter tuning  
 
 ---
 
-## Data availability
+## Data Availability
 
-All data used in this workflow are publicly available:
+All datasets used are publicly accessible:
 
-* Study dataset: https://doi.org/10.6084/m9.figshare.29650937  
-* 1000 Genomes reference (PLINK format):  
+- Study dataset: https://doi.org/10.6084/m9.figshare.29650937  
+- 1000 Genomes reference (PLINK format):  
   https://www.cog-genomics.org/plink/2.0/resources  
 
-
 ---
 
-## Pipeline overview
+## Pipeline Overview
 
 ```text
 1000 Genomes + Study data
         ↓
-SNP filtering (biallelic, A/C/G/T only)
+Variant filtering (biallelic SNPs; A/C/G/T only)
         ↓
-Removal of ambiguous SNPs (A/T, C/G)
+Removal of strand-ambiguous SNPs (A/T, C/G)
         ↓
-Removal of duplicate variants
+Duplicate variant removal
         ↓
 Autosomal filtering (chr 1–22)
         ↓
 SNP intersection (rsID-based)
         ↓
-Merge with 1000 Genomes
+Dataset merging
         ↓
 LD pruning
         ↓
-PCA computation (joint PCA)
+PCA computation (joint analysis)
         ↓
 Visualization
 ````
 
 ---
 
-## PCA plot
+## PCA Visualization
 
-Principal component analysis (PC1 vs PC2) showing study samples in the context of global populations from the 1000 Genomes Project.
+Principal components (PC1 vs PC2) showing study samples in the context of global populations from the 1000 Genomes Project.
 
 <p align="center">
   <img src="./plots/PCA.png" width="500"/>
@@ -84,45 +83,52 @@ Principal component analysis (PC1 vs PC2) showing study samples in the context o
 
 ---
 
-## Methodological note
+## Methodological Framework
 
-Principal component analysis (PCA) is performed **jointly** on the combined dataset of study samples and 1000 Genomes reference individuals.
+PCA is performed **jointly** on the merged dataset of study samples and 1000 Genomes reference individuals.
 
-This approach is standard in GWAS and is sufficient for:
+This approach is standard in GWAS and supports:
 
-* identifying global ancestry structure
-* detecting population outliers
-* generating covariates for association analysis
+* Global ancestry inference
+* Detection of population outliers
+* Generation of covariates for association models
 
-Projection-based PCA (where study samples are projected onto fixed reference PCs) was not used here, but may be explored in future work.
-
----
-
-## PCA interpretation
-
-The PCA reveals clear global population structure consistent with reference populations from the 1000 Genomes Project.
-
-* PC1 (~50%) separates African from non-African populations
-* PC2 (~24%) captures Eurasian population structure
-
-Study samples cluster predominantly with the South Asian (SAS) super-population, indicating expected ancestry for the cohort.
-
-A slight spread toward European populations is observed, consistent with known admixture patterns in Indian populations. No distinct population outliers were detected.
+Projection-based PCA (projection onto fixed reference eigenvectors) is not implemented here but can be incorporated if strict separation between reference and study data is required.
 
 ---
 
-## Why these steps matter
+## PCA Interpretation
 
-Each preprocessing step addresses a specific issue in genomic data:
+The PCA recapitulates known global population structure:
 
-* **Ambiguous SNPs (A/T, C/G)** → can cause strand mismatches during merging
-* **Duplicate variants** → removed to ensure consistent SNP representation across datasets (may slightly reduce marker density but does not affect overall population structure)
-* **LD pruning** → ensures PCA reflects genome-wide structure rather than local linkage patterns
-* **Joint analysis with 1000 Genomes** → enables biological interpretation of ancestry clusters
+* **PC1 (~50%)** separates African vs non-African populations
+* **PC2 (~24%)** captures Eurasian structure
+
+Study samples cluster predominantly within the **South Asian (SAS)** super-population, consistent with cohort origin.
+
+A mild shift toward European clusters is observed, reflecting known admixture patterns in Indian populations. No discrete outlier samples are evident.
 
 ---
 
-## Running the pipeline
+## Rationale for Preprocessing Steps
+
+Each preprocessing step mitigates specific technical artifacts:
+
+* **Strand-ambiguous SNPs (A/T, C/G)**
+  → Avoid allele alignment errors during merging
+
+* **Duplicate variants**
+  → Ensure one-to-one SNP representation across datasets
+
+* **LD pruning**
+  → Remove local correlation structure; retain genome-wide signal
+
+* **Joint PCA with reference panel**
+  → Enables biological interpretation of clustering
+
+---
+
+## Running the Pipeline
 
 ```bash
 bash scripts/01_1000G_qc.sh
@@ -133,23 +139,28 @@ bash scripts/05_pca.sh
 Rscript scripts/06_pca_plot.R
 ```
 
-See `docs/metadata.md` for preparing population labels.
+Metadata preparation (population labels, sample annotation):
 
-Each script includes inline comments explaining both the commands and the reasoning behind them.
+```
+docs/metadata.md
+```
 
----
-
-## Output
-
-* PCA coordinates (`.eigenvec`, `.eigenval`)
-* PCA plot → `plots/PCA.png`,`PCS_scree.png`
+All scripts include inline documentation explaining both command usage and analytical reasoning.
 
 ---
+
+## Outputs
+
+* PCA coordinates: `.eigenvec`, `.eigenval`
+* Visualization:
+
+  * `plots/PCA.png`
+  * `plots/PCS_scree.png`
 
 ---
 
 ## Author
 
-Ramakant Mohite
+**Ramakant Mohite**
 
 ```
