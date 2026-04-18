@@ -60,7 +60,7 @@ Design choices prioritize **allelic consistency and genome-wide independence** o
 
 ---
 
-## Role in GWAS
+## Role of PCA in GWAS
 
 - Confirms ancestry alignment  
 - Identifies outliers (none observed)  
@@ -80,8 +80,9 @@ https://doi.org/10.1371/journal.pntd.0014020
 
 ## Reproducibility
 
-Pipeline scripts are provided for methodological transparency.  
-Minor variation across environments is expected.
+Pipeline scripts are provided for methodological understanding ./scripts  
+Study dataset is freely available at [text](https://doi.org/10.6084/m9.figshare.29650937)
+1000 Genomes phase3 data can be downloaded from [text](https://www.cog-genomics.org/plink/2.0/resources)
 
 ---
 
