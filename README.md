@@ -10,8 +10,11 @@ This repository provides a reproducible implementation of the ancestry principal
 - Identify population outliers
 - Generate principal components for GWAS covariate adjustment
 
-PCA plot (PC1 vs PC2) is available in:
-./plots/PCA.png
+<h2>PCA Plot</h2>
+
+<p>PCA plot (PC1 vs PC2):</p>
+
+<img src="./plots/PCA.png" width="600">
 
 ---
 
