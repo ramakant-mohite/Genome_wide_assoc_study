@@ -1,128 +1,89 @@
-# Ancestry Inference via PCA (1000 Genomes + Study Cohort)
+# Population Structure of an Indian COVID-19 Cohort  
+### Joint PCA with 1000 Genomes Reference
 
-This repository provides a reproducible implementation of the ancestry principal component analysis (PCA) workflow of data used in our COVID-19 GWAS.
-
-**Goal of this analysis is**
-- Place study samples within a global ancestry framework
-- Identify population outliers
-
----
-
-## Study Context
-
-India remains underrepresented in large-scale genomic studies. Our work investigates whether population-specific genetic variation contributes to COVID-19 severity and evaluates how reference panel choice influences GWAS resolution.
-
-**Kaushik, Mohite et al., 2026**
-***PLOS Neglected Tropical Diseases***
-https://doi.org/10.1371/journal.pntd.0014020
+<p align="center">
+  <img src="plots/PCA_final.png" width="650">
+</p>
 
 ---
 
-## Data Availability
+## Context
 
-- Study dataset: https://doi.org/10.6084/m9.figshare.29650937
-- 1000 Genomes reference (PLINK format):
-  https://www.cog-genomics.org/plink/2.0/resources
+Genomic studies remain disproportionately Eurocentric, limiting discovery in diverse populations such as India. This work forms part of a GWAS investigating genetic determinants of COVID-19 severity, with a specific focus on how **reference panel choice (global vs indigenous)** influences signal detection.
 
----
-
-## PCA Strategy
-
-PCA is performed jointly on the merged dataset of study samples and 1000 Genomes reference individuals.
-
-- Global ancestry inference
-- Detection of population outliers
-- Generation of covariates for association models
-
-Projection-based PCA is not implemented but can be incorporated if required.
+PCA is used here as a **structural validation layer**, not an exploratory endpoint.
 
 ---
 
-## PCA Interpretation
+## Result
 
-**Study samples (indian)** cluster predominantly within the **South Asian (SAS)** super-population.
+The study cohort clusters tightly within the **South Asian (SAS)** ancestry space defined by the 1000 Genomes reference. ***(expected for indian dataset)***
 
-<h2>PCA Plot</h2>
+- PC1 (~50%) separates African vs non-African ancestry  
+- PC2 (~24%) resolves Eurasian structure  
+- Study samples show **coherent alignment with SAS**, with moderate vertical spread  
 
-<p>PCA plot (PC1 vs PC2):</p>
-
-<img src="./plots/PCA.png" width="600">
-
-
-- PC1 (~50%) separates African vs non-African populations
-- PC2 (~24%) captures Eurasian structure
-
-A minor shift toward European clusters is observed, consistent with known admixture patterns in South Asian populations. No discrete outliers are evident.
+This spread reflects **within-population heterogeneity**, consistent with known South Asian substructure. No discrete ancestry outliers are observed.
 
 ---
 
-## Variance Explained
+## Variance Structure
 
-The scree plot shows a strong elbow at PC3, with >80% variance explained by the first three components, indicating that population structure is largely captured by the leading PCs.
+<p align="center">
+  <img src="./plots/PCA_scree.png" width="420">
+</p>
 
-<p>Scree plot:</p>
-<img src="./plots/PCS_scree.png" width="600">
+- PC1–PC2 capture ~75% of variance  
+- PC1–PC4 capture ~90%  
+- Higher PCs represent fine-scale structure  
 
----
-
-## Pipeline Overview
-
-1000 Genomes + Study data    
-↓    
-Variant filtering (biallelic SNPs A/C/G/T only)    
-↓    
-Removal of strand-ambiguous SNPs (A/T, C/G)    
-↓    
-Duplicate variant removal    
-↓    
-Autosomal filtering (chr 1–22)    
-↓    
-SNP intersection (rsID-based)    
-↓    
-Dataset merging    
-↓    
-LD pruning    
-↓    
-PCA computation (joint analysis)    
-↓    
-Visualization    
+These components are sufficient for GWAS covariate adjustment.
 
 ---
 
+## Analytical Design
 
-## Rationale for Preprocessing Steps
+PCA is computed on a **joint dataset**:
 
-- Strand-ambiguous SNPs (A/T, C/G) prevent allele alignment errors
-- Duplicate variants ensure consistent SNP representation
-- LD pruning removes local correlation structure
-- Joint PCA with reference panel enables biological interpretation
+**Indian COVID-19 cohort + 1000 Genomes reference**
+
+This anchors the cohort within a global genetic framework and enables direct biological interpretation.
 
 ---
 
-## Running the Pipeline
+## Pipeline (minimal)
 
-```bash
-bash scripts/01_1000G_qc.sh
-bash scripts/02_study_qc.sh
-bash scripts/03_merge.sh
-bash scripts/04_ld_prune.sh
-bash scripts/05_pca.sh
-Rscript scripts/06_pca_plot.R
+QC → Harmonization → SNP intersection → Merge → LD pruning → PCA     
 
-Metadata preparation:
-docs/metadata.md
+Design choices prioritize **allelic consistency and genome-wide independence** over maximal variant retention.
 
-```
+---
+
+## Role in GWAS
+
+- Confirms ancestry alignment  
+- Identifies outliers (none observed)  
+- Provides PCs for population stratification control  
+
+This step ensures that downstream association signals are not confounded by population structure.
+
+---
+
+## Study
+
+Kaushik, Mohite et al., 2026  
+*PLOS Neglected Tropical Diseases*  
+https://doi.org/10.1371/journal.pntd.0014020  
+
+---
+
+## Reproducibility
+
+Pipeline scripts are provided for methodological transparency.  
+Minor variation across environments is expected.
+
+---
 
 ## Author
 
-**Ramakant Mohite**
-
----
-
-## Reproducibility Note
-
-- Designed for methodological reproducibility (not byte-level replication)
-- Core analytical logic preserved
-- Minor simplifications for usability
-- Outputs may vary across software versions
+Ramakant Mohite

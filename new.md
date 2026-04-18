@@ -1,9 +1,7 @@
 # Population Structure of an Indian COVID-19 Cohort  
 ### Joint PCA with 1000 Genomes Reference
 
-<p align="center">
-  <img src="./plots/PCA_final.png" width="650">
-</p>
+
 
 ---
 
